@@ -1,9 +1,7 @@
 ﻿using Api.Model;
 using Api.Model.Person;
-using AutoMapper;
 using Core.Infrastructure.Exceptions;
 using Core.Person.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net;
@@ -11,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Api.Controllers
 {
-    [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
     public class PersonController : ControllerBase

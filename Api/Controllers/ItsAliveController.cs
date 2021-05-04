@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 
 namespace Api.Controllers
 {
-    [AllowAnonymous]
-    //[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Policy = AuthorizationPolicies.RequiresManager)]
     [Route("api/[controller]")]
     [ApiController]
     public class ItsAliveController : ControllerBase

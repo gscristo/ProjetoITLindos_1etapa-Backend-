@@ -1,18 +1,12 @@
 using Api.Config;
-using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+using Api.Filter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.Text;
 
@@ -32,8 +26,11 @@ namespace Api
         {
             ServiceInjection.Configure(services, Configuration);
 
+            services.AddControllers(options =>
+            {
+                options.Filters.Add(typeof(HttpGlobalExceptionFilter));
+            }).AddNewtonsoftJson(x => x.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            services.AddControllers();
             services.AddSwaggerGen(c =>
             {
                 var apiVersionInfoDescription = new StringBuilder();
@@ -57,30 +54,15 @@ namespace Api
                 });
             });
 
-            services
-                .AddMemoryCache()
-                .AddMvc(config =>
-                {
-                    var policy = new AuthorizationPolicyBuilder()
-                        .RequireAuthenticatedUser()
-                        .Build();
-                    config.Filters.Add(new AuthorizeFilter(policy));
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
-                .AddNewtonsoftJson(setupAction =>
-                {
-                    setupAction.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    setupAction.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-                    setupAction.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                });
-
-            services
-                .AddOptions()
-                .AddResponseCompression(options =>
-                {
-                    options.EnableForHttps = true;
-                    options.MimeTypes = ResponseCompressionDefaults.MimeTypes;
-                });
+            services.AddCors(options =>
+            {
+                options.AddPolicy(
+                  "CorsPolicy",
+                  builder => builder.WithOrigins("http://localhost:4200")
+                  .AllowAnyMethod()
+                  .AllowAnyHeader()
+                  .AllowCredentials());
+            });
 
             services.AddSingleton<IConfiguration>(Configuration);
         }
@@ -105,6 +87,8 @@ namespace Api
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors("CorsPolicy");
 
             app.UseAuthorization();
 
