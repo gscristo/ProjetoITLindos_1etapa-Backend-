@@ -8,12 +8,13 @@
     using System.Data;
     using System.Threading.Tasks;
     using System.Linq.Expressions;
+    using System.Linq;
     using System;
 
     public class Repository<T> : IRepository<T> where T : class
     {
         private IDataContext _dataContext { get; set; }
-        
+
         public Repository(IDataContext dataContext)
         {
             _dataContext = dataContext;
@@ -28,6 +29,15 @@
             return result;
         }
 
+        public T GetByName(string Name)
+        {
+            var result = _dataContext.Connection.Get<T>(Name);
+
+            _dataContext.Dispose();
+
+            return result;
+        }
+
         public IEnumerable<T> GetAll()
         {
             var result = _dataContext.Connection.GetList<T>();
@@ -36,7 +46,7 @@
 
             return result;
         }
-      
+
         public Guid Insert(T entity, IDbTransaction transaction = null, int? commandTimeout = null)
         {
             var result = _dataContext.Connection.Insert(entity, transaction, commandTimeout);
@@ -60,8 +70,16 @@
             _dataContext.Dispose();
         }
 
+        public void DeleteByCode(T entity, IDbTransaction transaction = null, int? commandTimeout = null)
+        {
+            _dataContext.Connection.Delete(entity, transaction, commandTimeout);
+
+            _dataContext.Dispose();
+        }
+
         public async Task<T> GetByIdAsync(Guid Id, IDbTransaction transaction = null, int? commandTimeout = null)
         {
+
             var result = await _dataContext.Connection.GetAsync<T>(Id, transaction, commandTimeout);
 
             _dataContext.Dispose();
@@ -69,6 +87,85 @@
             return result;
         }
 
+        public async Task<IEnumerable<T>> GetByNameAsync(string Name, IDbTransaction transaction = null, int? commandTimeout = null)
+
+        {
+            string query = $"select * from dbo.Product where Name Like '%{Name}%'";
+
+
+
+            var result = await _dataContext.Connection.QueryAsync<T>(query);
+
+
+
+            _dataContext.Dispose();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<T>> GetProductByCodeAsync(string Code, IDbTransaction transaction = null, int? commandTimeout = null)
+
+        {
+            string query = $"select * from dbo.Product where Code Like '%{Code}%'";
+
+
+
+            var result = await _dataContext.Connection.QueryAsync<T>(query);
+
+
+
+            _dataContext.Dispose();
+
+            return result;
+        }
+
+        public async Task<T> GetUnicProductByCodeAsync(string Code, IDbTransaction transaction = null, int? commandTimeout = null)
+
+        {
+            string query = $"select * from dbo.Product where Code = {Code}";
+
+
+
+            var result = await _dataContext.Connection.QueryAsync<T>(query);
+
+
+
+            _dataContext.Dispose();
+
+            return result.FirstOrDefault();
+        }
+
+        public async Task<IEnumerable<T>> GetPersonByNameAsync(string Name, IDbTransaction transaction = null, int? commandTimeout = null)
+
+        {
+            string query = $"select * from dbo.Person where Name Like '%{Name}%'";
+
+
+
+            var result = await _dataContext.Connection.QueryAsync<T>(query);
+
+
+
+            _dataContext.Dispose();
+
+            return result;
+        }
+
+        public async Task<IEnumerable<T>> GetPersonByCpfAsync(string SocialNumber, IDbTransaction transaction = null, int? commandTimeout = null)
+
+        {
+            string query = $"select * from dbo.Person where SocialNumber Like '%{SocialNumber}%'";
+
+
+
+            var result = await _dataContext.Connection.QueryAsync<T>(query);
+
+
+
+            _dataContext.Dispose();
+
+            return result;
+        }
         public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> predicate = null, IList<ISort> sort = null, IDbTransaction transaction = null, int? commandTimeout = null)
         {
             var result = await _dataContext.Connection.GetListAsync<T>(predicate, sort, transaction, commandTimeout);
@@ -159,5 +256,7 @@
                 };
             }
         }
+
+
     }
 }

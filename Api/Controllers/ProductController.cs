@@ -1,7 +1,7 @@
 ﻿using Api.Model;
-using Api.Model.Person;
+using Api.Model.Product;
 using Core.Infrastructure.Exceptions;
-using Core.Person.Interfaces;
+using Core.Product.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Net;
@@ -11,32 +11,35 @@ namespace Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PersonController : ControllerBase
+    public class ProductController : ControllerBase
     {
-        private readonly IGetPersonById _getPersonById;
-        private readonly IGetPersonByName _getPersonByName;
-        private readonly IGetPersonByCpf _getPersonByCpf;
-        private readonly IDeletePerson _deletePerson;
-        private readonly IUpdatePerson _updatePerson;
-        private readonly IGetAllPerson _getAllPerson;
-        private readonly ICreatePerson _createPerson;
+        private readonly IGetProductById _getProductById;
+        private readonly IDeleteProduct _deleteProduct;
+        private readonly IDeleteProductByCode _deleteProductByCode;
+        private readonly IUpdateProduct _updateProduct;
+        private readonly IGetAllProduct _getAllProduct;
+        private readonly ICreateProduct _createProduct;
+        private readonly IGetProductByName _getProductByName;
+        private readonly IGetProductByCode _getProductByCode;
 
-
-        public PersonController(IGetPersonById getPersonById,
-                                  IDeletePerson deletePerson,
-                                  IUpdatePerson updatePerson,
-                                  IGetAllPerson getAllPerson,
-                                  ICreatePerson createPerson,
-                                  IGetPersonByName getPersonByName,
-                                  IGetPersonByCpf getPersonByCpf)
+        public ProductController(IGetProductById getProductById,
+                                  IDeleteProduct deleteProduct,
+                                  IDeleteProductByCode deleteProductByCode,
+                                  IUpdateProduct updateProduct,
+                                  IGetAllProduct getAllProduct,
+                                  ICreateProduct createProduct,
+                                  IGetProductByName getProductByName,
+                                  IGetProductByCode getProductByCode)
         {
-            _getPersonById = getPersonById;
-            _deletePerson = deletePerson;
-            _updatePerson = updatePerson;
-            _getAllPerson = getAllPerson;
-            _createPerson = createPerson;
-            _getPersonByName = getPersonByName;
-            _getPersonByCpf = getPersonByCpf;
+            _getProductById = getProductById;
+            _deleteProduct = deleteProduct;
+            _deleteProductByCode = deleteProductByCode;
+            _updateProduct = updateProduct;
+            _getAllProduct = getAllProduct;
+            _createProduct = createProduct;
+            _getProductByName = getProductByName;
+            _getProductByCode = getProductByCode;
+
         }
 
         [HttpPost("GetAll")]
@@ -44,7 +47,7 @@ namespace Api.Controllers
         {
             try
             {
-                var model = await _getAllPerson.Execute(paginationRequest.PageSize, paginationRequest.PageIndex, paginationRequest.Sort, paginationRequest.Direction);
+                var model = await _getAllProduct.Execute(paginationRequest.PageSize, paginationRequest.PageIndex, paginationRequest.Sort, paginationRequest.Direction);
 
                 return Ok(Result.Create(model, HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
@@ -59,12 +62,12 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        [Route("{personId}")]
-        public async Task<IActionResult> GetId(Guid personId)
+        [Route("{productId}")]
+        public async Task<IActionResult> GetId(Guid productId)
         {
             try
             {
-                var result = await _getPersonById.Execute(personId);
+                var result = await _getProductById.Execute(productId);
 
                 return Ok(Result.Create(result, HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
@@ -79,12 +82,12 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        [Route("filter/{personByName}")]
-        public async Task<IActionResult> GetName(string personByName)
+        [Route("filter/{productByName}")]
+        public async Task<IActionResult> GetName(string productByName)
         {
             try
             {
-                var result = await _getPersonByName.Execute(personByName);
+                var result = await _getProductByName.Execute(productByName);
 
                 return Ok(Result.Create(result, HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
@@ -99,12 +102,12 @@ namespace Api.Controllers
         }
 
         [HttpGet]
-        [Route("filter/1/{personByCpf}")]
-        public async Task<IActionResult> GetCpf(string personByCpf)
+        [Route("filter/1/{productByCode}")]
+        public async Task<IActionResult> GetCode(string productByCode)
         {
             try
             {
-                var result = await _getPersonByCpf.Execute(personByCpf);
+                var result = await _getProductByCode.Execute(productByCode);
 
                 return Ok(Result.Create(result, HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
@@ -119,13 +122,13 @@ namespace Api.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] UpdatePersonRequest updatePersonRequest)
+        public async Task<IActionResult> Put([FromBody] UpdateProductRequest updateProductRequest)
         {
             try
             {
-                var result = await _updatePerson.Execute(updatePersonRequest);
+                var result = await _updateProduct.Execute(updateProductRequest);
 
-                return Ok(Result.Create(updatePersonRequest, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
+                return Ok(Result.Create(updateProductRequest, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
             catch (ApiDomainException domainException)
             {
@@ -142,17 +145,17 @@ namespace Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreatePersonRequest createPersonRequest)
+        public async Task<IActionResult> Post([FromBody] CreateProductRequest createProductRequest)
         {
             try
             {
-                var result = await _createPerson.Execute(createPersonRequest);
+                var result = await _createProduct.Execute(createProductRequest);
 
                 return Ok(Result.Create(result, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
             catch (ApiDomainException domainException)
             {
-                return BadRequest(Result.Create(domainException.Errors, HttpStatusCode.BadRequest, "Ops! Algo de errado aconteceu, verifique se o cpf digitado já existe nos registros e tente novamente."));
+                return BadRequest(Result.Create(domainException.Errors, HttpStatusCode.BadRequest, "Ops! Algo de errado aconteceu, verifique se o código do produto ja existe ou se a unidade é válida."));
             }
             catch (ArgumentException e)
             {
@@ -165,14 +168,33 @@ namespace Api.Controllers
         }
 
         [HttpDelete]
-        [Route("{personId}")]
-        public IActionResult Delete(Guid personId)
+        [Route("{productId}")]
+        public IActionResult Delete(Guid productId)
         {
             try
             {
-                _deletePerson.Execute(personId);
+                _deleteProduct.Execute(productId);
 
-                return Ok(Result.Create(personId, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
+                return Ok(Result.Create(productId, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
+            }
+            catch (ArgumentException e)
+            {
+                return StatusCode((int)HttpStatusCode.BadRequest, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, e.Message);
+            }
+        }
+        [HttpDelete]
+        [Route("filter/{productCode}")]
+        public IActionResult DeleteByCode(string productCode)
+        {
+            try
+            {
+                _deleteProductByCode.Execute(productCode);
+
+                return Ok(Result.Create(productCode, System.Net.HttpStatusCode.OK, "Operação executada com sucesso!"));
             }
             catch (ArgumentException e)
             {

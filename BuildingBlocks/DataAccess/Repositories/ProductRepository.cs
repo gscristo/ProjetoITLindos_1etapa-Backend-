@@ -4,9 +4,9 @@ using DataAccess.Interfaces;
 
 namespace DataAccess.Repositories
 {
-    public class PersonRepository : Repository<Person>, IPersonRepository
+    public class ProductRepository : Repository<Product>, IProductRepository
     {
-        public PersonRepository(IDataContext dataContext)
+        public ProductRepository(IDataContext dataContext)
             : base(dataContext)
         {
         }

@@ -3,6 +3,7 @@ using Core.Person.Interfaces;
 using DataAccess.Interfaces;
 using System.Threading.Tasks;
 using Core.Person.Validators;
+using System.Linq;
 
 namespace Core.Person
 {
@@ -24,6 +25,20 @@ namespace Core.Person
             if (!PersonValidated.IsValid)
             {
                 throw new ApiDomainException(PersonValidated.Errors);
+
+            }
+
+
+
+            var allPerson = await _personRepository.GetAllAsync();
+
+            var found = allPerson.ToList().Find(x => x.SocialNumber == person.SocialNumber);
+
+            if (found != null)
+            {
+                string bloqueio = "Este CPF já está cadastrado";
+
+                throw new ApiDomainException(bloqueio);
             }
 
             person.Status = true;

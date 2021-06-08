@@ -3,6 +3,7 @@ using Core.Person.Validators;
 using Core.Infrastructure.Exceptions;
 using DataAccess.Interfaces;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Core.Person
 {
@@ -25,11 +26,6 @@ namespace Core.Person
             {
                 throw new ApiDomainException(personValidated.Errors);
             }
-
-            //DataAccess.Entities.Person personEntity = new DataAccess.Entities.Person
-            //{
-            //    PersonId = person.PersonId,
-            //};
 
             return await _personRepository.UpdateAsync(person);
         }

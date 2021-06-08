@@ -4,6 +4,6 @@ namespace Core.Person.Interfaces
 {
     public interface IDeletePerson
     {
-        void Execute(Guid peronId);
+        void Execute(Guid personId);
     }
 }
